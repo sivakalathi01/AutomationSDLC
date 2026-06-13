@@ -1,0 +1,38 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+logs/
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# .NET / Backend
+**/bin/
+**/obj/
+
+# Test outputs
+coverage/
+TestResults/
+
+# Local env/config
+.env
+.env.*
+appsettings.Development.local.json
+
+# Terraform/Bicep generated
+*.tfstate
+*.tfstate.*
+.terraform/

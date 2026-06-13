@@ -1,0 +1,44 @@
+{
+  "name": "virtusa-agentic-platform",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.14.0",
+    "@fluentui/react": "^8.111.0",
+    "@fluentui/react-icons": "^1.1.27",
+    "@tanstack/react-query": "^4.32.0",
+    "@tanstack/react-table": "^8.9.0",
+    "zustand": "^4.4.0",
+    "react-hook-form": "^7.45.0",
+    "zod": "^3.22.0",
+    "@hookform/resolvers": "^3.2.0",
+    "@microsoft/signalr": "^7.0.0",
+    "@azure/msal-react": "^2.0.0",
+    "@azure/msal-browser": "^3.0.0",
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.4.0",
+    "typescript": "^5.1.0",
+    "eslint": "^8.45.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "vitest": "^0.34.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "playwright": "^1.38.0",
+    "@axe-core/playwright": "^4.8.0"
+  }
+}

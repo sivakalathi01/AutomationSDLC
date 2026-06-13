@@ -1,0 +1,113 @@
+name: Build and Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'backend/**'
+      - 'infrastructure/docker/**'
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: ${{ secrets.ACR_URL }}
+
+jobs:
+  build-orchestrator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore backend/services/OrchestratorApi/OrchestratorApi.csproj
+
+      - name: Build
+        run: dotnet build backend/services/OrchestratorApi/OrchestratorApi.csproj -c Release --no-restore
+
+      - name: Test
+        run: dotnet test backend/services/OrchestratorApi/OrchestratorApi.csproj -c Release --no-build
+
+      - name: Publish
+        run: dotnet publish backend/services/OrchestratorApi/OrchestratorApi.csproj -c Release -o publish
+
+      - name: Build Docker image
+        run: |
+          docker build -f infrastructure/docker/Dockerfile.Orchestrator \
+            -t ${{ env.REGISTRY }}/orchestrator:${{ github.sha }} \
+            -t ${{ env.REGISTRY }}/orchestrator:latest .
+
+      - name: Push to ACR
+        if: github.event_name == 'push'
+        run: |
+          docker login -u ${{ secrets.ACR_USERNAME }} -p ${{ secrets.ACR_PASSWORD }} ${{ env.REGISTRY }}
+          docker push ${{ env.REGISTRY }}/orchestrator:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/orchestrator:latest
+
+  build-agents:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        agent:
+          - AgentRequirements
+          - AgentSpecification
+          - AgentStory
+          - AgentArchitecture
+          - AgentTaskPlanning
+          - AgentTestDesign
+          - AgentCodeGeneration
+          - AgentIaCCicd
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build ${{ matrix.agent }}
+        run: dotnet build backend/services/${{ matrix.agent }}/${{ matrix.agent }}.csproj -c Release
+
+      - name: Test ${{ matrix.agent }}
+        run: dotnet test backend/services/${{ matrix.agent }}/${{ matrix.agent }}.csproj -c Release
+
+      - name: Publish ${{ matrix.agent }}
+        run: dotnet publish backend/services/${{ matrix.agent }}/${{ matrix.agent }}.csproj -c Release
+
+      - name: Build and push Docker image
+        if: github.event_name == 'push'
+        run: |
+          docker build -f infrastructure/docker/Dockerfile.Agent \
+            --build-arg AGENT_PROJECT_PATH=${{ matrix.agent }} \
+            -t ${{ env.REGISTRY }}/${{ matrix.agent }}:${{ github.sha }} \
+            -t ${{ env.REGISTRY }}/${{ matrix.agent }}:latest .
+          docker login -u ${{ secrets.ACR_USERNAME }} -p ${{ secrets.ACR_PASSWORD }} ${{ env.REGISTRY }}
+          docker push ${{ env.REGISTRY }}/${{ matrix.agent }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ matrix.agent }}:latest
+
+  deploy:
+    needs: [build-orchestrator, build-agents]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy Infrastructure
+        run: |
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+          az deployment sub create \
+            --template-file infrastructure/bicep/main.bicep \
+            --parameters resourceGroupName='rg-prod-agentic' environment='prod' \
+            --location eastus
+
+      - name: Deploy to Container Apps
+        run: |
+          echo "Deploying services to Azure Container Apps"
+          # Add deployment commands here

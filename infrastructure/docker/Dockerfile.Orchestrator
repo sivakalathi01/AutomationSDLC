@@ -1,0 +1,26 @@
+# Orchestrator API
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["backend/services/OrchestratorApi/OrchestratorApi.csproj", "OrchestratorApi/"]
+COPY ["backend/shared/Shared.csproj", "Shared/"]
+
+RUN dotnet restore "OrchestratorApi/OrchestratorApi.csproj"
+
+COPY backend/services/OrchestratorApi/ OrchestratorApi/
+COPY backend/shared/ Shared/
+
+WORKDIR /src/OrchestratorApi
+RUN dotnet build "OrchestratorApi.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "OrchestratorApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:5000
+EXPOSE 5000
+
+ENTRYPOINT ["dotnet", "Virtusa.Agentic.OrchestratorApi.dll"]
