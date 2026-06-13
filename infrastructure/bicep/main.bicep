@@ -6,6 +6,9 @@ param resourceGroupName string
 @description('Location')
 param location string = 'eastus'
 
+@description('Static Web App location (limited set of supported regions)')
+param staticWebAppLocation string = 'eastus2'
+
 @description('Environment')
 param environment string = 'dev'
 
@@ -133,7 +136,7 @@ module staticWebApp 'staticWebApp.bicep' = {
   name: 'staticWebApp'
   params: {
     swaName: 'swa-${environment}-agentic'
-    location: 'eastus' // SWA has limited regions
+    location: staticWebAppLocation
   }
 }
 
