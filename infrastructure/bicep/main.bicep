@@ -126,6 +126,7 @@ module containerAppsEnv 'containerAppsEnv.bicep' = {
     caEnvironmentName: 'cae-${environment}-agentic'
     location: location
     logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+    logAnalyticsWorkspaceCustomerId: logAnalytics.outputs.workspaceCustomerId
     logAnalyticsWorkspaceSharedKey: logAnalytics.outputs.workspaceSharedKey
   }
 }
