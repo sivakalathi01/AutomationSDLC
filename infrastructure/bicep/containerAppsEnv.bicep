@@ -7,6 +7,10 @@ param location string = resourceGroup().location
 @description('Log Analytics Workspace ID')
 param logAnalyticsWorkspaceId string
 
+@description('Log Analytics Workspace shared key')
+@secure()
+param logAnalyticsWorkspaceSharedKey string
+
 resource containerAppsEnv 'Microsoft.App/managedEnvironments@2023-04-01-preview' = {
   name: caEnvironmentName
   location: location
@@ -15,6 +19,7 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2023-04-01-preview'
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
         customerId: split(logAnalyticsWorkspaceId, '/')[8]
+        sharedKey: logAnalyticsWorkspaceSharedKey
       }
     }
   }

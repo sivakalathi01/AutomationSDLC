@@ -15,3 +15,5 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2021-12
 }
 
 output workspaceId string = logAnalyticsWorkspace.id
+output workspaceCustomerId string = logAnalyticsWorkspace.properties.customerId
+output workspaceSharedKey string = listKeys(logAnalyticsWorkspace.id, '2020-08-01').primarySharedKey
