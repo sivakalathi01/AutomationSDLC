@@ -28,6 +28,12 @@ param keyVaultUri string
 @description('Deployment environment name')
 param environment string
 
+@description('Runtime environment name')
+param runtimeEnvironment string = 'Production'
+
+@description('Whether to use Key Vault-backed secrets')
+param useKeyVaultSecrets bool = true
+
 @description('Container target port')
 param targetPort int = 5000
 
@@ -54,7 +60,7 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
           identity: managedIdentityResourceId
         }
       ]
-      secrets: [
+      secrets: useKeyVaultSecrets ? [
         {
           name: 'servicebus-connection'
           keyVaultUrl: '${keyVaultUri}secrets/ConnectionStrings--ServiceBus'
@@ -75,17 +81,17 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
           keyVaultUrl: '${keyVaultUri}secrets/AzureOpenAI--DeploymentName'
           identity: managedIdentityResourceId
         }
-      ]
+      ] : []
     }
     template: {
       containers: [
         {
           name: containerName
           image: '${containerRegistryServer}/${imageRepository}:${imageTag}'
-          env: [
+          env: useKeyVaultSecrets ? [
             {
               name: 'ASPNETCORE_ENVIRONMENT'
-              value: environment
+              value: runtimeEnvironment
             }
             {
               name: 'KeyVault__Url'
@@ -106,6 +112,15 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             {
               name: 'AzureOpenAI__DeploymentName'
               secretRef: 'openai-deployment'
+            }
+          ] : [
+            {
+              name: 'ASPNETCORE_ENVIRONMENT'
+              value: runtimeEnvironment
+            }
+            {
+              name: 'KeyVault__Url'
+              value: keyVaultUri
             }
           ]
           resources: {

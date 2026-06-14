@@ -9,6 +9,12 @@ param location string = 'eastus'
 @description('Static Web App location (limited set of supported regions)')
 param staticWebAppLocation string = 'eastus2'
 
+@description('Runtime environment for Azure workloads')
+param appRuntimeEnvironment string = 'Development'
+
+@description('Whether Azure workloads should use Key Vault-backed secrets')
+param useKeyVaultSecrets bool = false
+
 @description('Environment')
 param environment string = 'dev'
 
@@ -154,6 +160,8 @@ module requirementsAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'agentrequirements'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -170,6 +178,8 @@ module specificationAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'agentspecification'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -186,6 +196,8 @@ module storyAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'agentstory'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -202,6 +214,8 @@ module architectureAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'agentarchitecture'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -218,6 +232,8 @@ module taskPlanningAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'agenttaskplanning'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -234,6 +250,8 @@ module testDesignAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'agenttestdesign'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -250,6 +268,8 @@ module codeGenerationAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'agentcodegeneration'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -266,6 +286,8 @@ module iacCicdAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'agentiaccicd'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -282,6 +304,8 @@ module qualityGateAgentContainerApp './agentContainerApp.bicep' = {
     imageRepository: 'qualitygateservice'
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    runtimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
   }
 }
 
@@ -298,6 +322,8 @@ module orchestratorContainerApp 'orchestratorContainerApp.bicep' = {
     containerRegistryServer: acr.outputs.registryUrl
     keyVaultUri: keyVault.outputs.keyVaultUri
     environment: environment
+    appRuntimeEnvironment: appRuntimeEnvironment
+    useKeyVaultSecrets: useKeyVaultSecrets
     requirementsAgentUrl: 'https://${requirementsAgentContainerApp.outputs.fqdn}'
     specificationAgentUrl: 'https://${specificationAgentContainerApp.outputs.fqdn}'
     storyAgentUrl: 'https://${storyAgentContainerApp.outputs.fqdn}'

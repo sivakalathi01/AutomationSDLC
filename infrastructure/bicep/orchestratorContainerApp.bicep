@@ -22,6 +22,12 @@ param keyVaultUri string
 @description('Deployment environment name')
 param environment string
 
+@description('Runtime environment for the orchestrator')
+param appRuntimeEnvironment string = 'Development'
+
+@description('Whether to use Key Vault-backed secrets')
+param useKeyVaultSecrets bool = false
+
 @description('Internal endpoint for requirements agent')
 param requirementsAgentUrl string = ''
 
@@ -72,7 +78,7 @@ resource orchestratorApp 'Microsoft.App/containerApps@2023-05-01' = {
           identity: managedIdentityResourceId
         }
       ]
-      secrets: [
+      secrets: useKeyVaultSecrets ? [
         {
           name: 'servicebus-connection'
           keyVaultUrl: '${keyVaultUri}secrets/ConnectionStrings--ServiceBus'
@@ -108,18 +114,19 @@ resource orchestratorApp 'Microsoft.App/containerApps@2023-05-01' = {
           keyVaultUrl: '${keyVaultUri}secrets/Security--Jwt--Audience'
           identity: managedIdentityResourceId
         }
-      ]
+      ] : []
     }
     template: {
       containers: [
         {
           name: 'orchestrator'
           image: '${containerRegistryServer}/orchestrator:${imageTag}'
-          env: [
+          env: concat([
             {
               name: 'ASPNETCORE_ENVIRONMENT'
-              value: environment
+              value: appRuntimeEnvironment
             }
+          ], useKeyVaultSecrets ? [
             {
               name: 'KeyVault__Url'
               value: keyVaultUri
@@ -160,6 +167,12 @@ resource orchestratorApp 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'Security__RequireHttpsMetadata'
               value: 'true'
             }
+          ] : [
+            {
+              name: 'Security__EnableAuthentication'
+              value: 'false'
+            }
+          ], [
             {
               name: 'Services__Requirements'
               value: requirementsAgentUrl
@@ -196,7 +209,7 @@ resource orchestratorApp 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'Services__QualityGate'
               value: qualityGateAgentUrl
             }
-          ]
+          ])
           resources: {
             cpu: json('0.5')
             memory: '1Gi'
